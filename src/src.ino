@@ -5,8 +5,11 @@
 
 #define RX_PIN (10)
 #define TX_PIN (11)
+#define SHOT_PIN (12)
+#define GUN_PIN (7)
 
-#define PIN_GUN (7)
+#define PLAY_ENGINE_SOUND() (dfmp3.playFolderTrack16(1, 1))
+#define PLAY_SHOT_SOUND() (dfmp3.playFolderTrack16(2, 1))
 
 class Mp3Notify;
 typedef DFMiniMp3<SoftwareSerial, Mp3Notify> DfMp3;
@@ -21,7 +24,8 @@ void setup()
   Serial.println("===== Start Setup =====");
 #endif
 
-  pinMode(PIN_GUN, OUTPUT);
+  pinMode(GUN_PIN, OUTPUT);
+  pinMode(SHOT_PIN, INPUT_PULLUP);
 
   dfmp3.begin(9600, 1000);
   dfmp3.reset();
@@ -29,7 +33,7 @@ void setup()
   dfmp3.setVolume(20);
   waitMilliseconds(100);
 
-  dfmp3.playFolderTrack16(1, 1);
+  PLAY_ENGINE_SOUND();
   waitMilliseconds(1000 * 3);
 
 #ifdef _DEBUG
@@ -39,42 +43,44 @@ void setup()
 
 void loop()
 {
-#ifdef _DEBUG
-  Serial.println("----- Loop start -----");
-#endif
+// #ifdef _DEBUG
+//   Serial.println("----- Loop start -----");
+// #endif
 
+  if (digitalRead(SHOT_PIN) == LOW) {
 #ifdef _DEBUG
-  Serial.println("Fire!");
+    Serial.println("Fire!");
 #endif
-  fire();
+    fire();
+  }
 
-#ifdef _DEBUG
-  Serial.println("Wait...");
-#endif
-  waitMilliseconds(1000 * 20);
+// #ifdef _DEBUG
+//   Serial.println("Wait...");
+// #endif
+  waitMilliseconds(100);
 
-#ifdef _DEBUG
-  Serial.println("----- Loop end -----");
-#endif
+// #ifdef _DEBUG
+//   Serial.println("----- Loop end -----");
+// #endif
 }
 
 void fire() {
-#ifdef _DEBUG
-  Serial.println("Play 1");
-#endif
-  dfmp3.playFolderTrack16(2, 1);
+// #ifdef _DEBUG
+//   Serial.println("Play 1");
+// #endif
+  PLAY_SHOT_SOUND();
 
   for(int i = 0; i < 10; i ++) {
-    digitalWrite(PIN_GUN, HIGH);
+    digitalWrite(GUN_PIN, HIGH);
     waitMilliseconds(50);
-    digitalWrite(PIN_GUN, LOW);
+    digitalWrite(GUN_PIN, LOW);
     waitMilliseconds(50);
   }
 
-#ifdef _DEBUG
-  Serial.println("Play 2(Loop)");
-#endif
-  dfmp3.playFolderTrack16(1, 1);
+// #ifdef _DEBUG
+//   Serial.println("Play 2(Loop)");
+// #endif
+  PLAY_ENGINE_SOUND();
 }
 
 void waitMilliseconds(uint16_t msWait)
@@ -156,6 +162,9 @@ public:
     Serial.print("Play finished for #");
     Serial.println(track);
 #endif
+    if (track == 2) {
+      PLAY_ENGINE_SOUND();
+    }
   }
   static void OnPlaySourceOnline(DfMp3 &mp3, DfMp3_PlaySources source)
   {
