@@ -1,19 +1,23 @@
 #include "DFMiniMp3.h"
 #include <SoftwareSerial.h>
 
-#define _DEBUG (1)
+// #define _DEBUG (1)
 
-#define RX_PIN (10)
-#define TX_PIN (11)
+#define SOUND_RX_PIN (10)
+#define SOUND_TX_PIN (11)
 #define SHOT_PIN (12)
-#define GUN_PIN (7)
+#define MOTOR_PIN (6)
+#define GUN1_PIN (5)
+#define GUN2_PIN (4)
+
+#define MOTOR_SPEED (100)
 
 #define PLAY_ENGINE_SOUND() (dfmp3.playFolderTrack16(1, 1))
 #define PLAY_SHOT_SOUND() (dfmp3.playFolderTrack16(2, 1))
 
 class Mp3Notify;
 typedef DFMiniMp3<SoftwareSerial, Mp3Notify> DfMp3;
-SoftwareSerial mySerial(RX_PIN, TX_PIN);
+SoftwareSerial mySerial(SOUND_RX_PIN, SOUND_TX_PIN);
 DfMp3 dfmp3(mySerial);
 
 void setup()
@@ -24,7 +28,9 @@ void setup()
   Serial.println("===== Start Setup =====");
 #endif
 
-  pinMode(GUN_PIN, OUTPUT);
+  pinMode(MOTOR_PIN, OUTPUT);
+  pinMode(GUN1_PIN, OUTPUT);
+  pinMode(GUN2_PIN, OUTPUT);
   pinMode(SHOT_PIN, INPUT_PULLUP);
 
   dfmp3.begin(9600, 1000);
@@ -34,7 +40,6 @@ void setup()
   waitMilliseconds(100);
 
   PLAY_ENGINE_SOUND();
-  waitMilliseconds(1000 * 3);
 
 #ifdef _DEBUG
   Serial.println("----- Setup end -----");
@@ -43,6 +48,7 @@ void setup()
 
 void loop()
 {
+  analogWrite(MOTOR_PIN, MOTOR_SPEED);
 // #ifdef _DEBUG
 //   Serial.println("----- Loop start -----");
 // #endif
@@ -71,9 +77,11 @@ void fire() {
   PLAY_SHOT_SOUND();
 
   for(int i = 0; i < 10; i ++) {
-    digitalWrite(GUN_PIN, HIGH);
+    digitalWrite(GUN1_PIN, HIGH);
+    digitalWrite(GUN2_PIN, HIGH);
     waitMilliseconds(50);
-    digitalWrite(GUN_PIN, LOW);
+    digitalWrite(GUN1_PIN, LOW);
+    digitalWrite(GUN2_PIN, LOW);
     waitMilliseconds(50);
   }
 
